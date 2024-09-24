@@ -2,16 +2,22 @@ import pandas as pd
 from transformers import BertTokenizer, BertForSequenceClassification
 import torch
 
+from app import scores_ranks_df
+
 # 加载产品-行业映射表
 product_industry_df = pd.read_csv('./data/product_industry.csv')
 
+
+# 从企业评分数据集中提取唯一的行业列表
+def get_unique_industries(df):
+    return df['Industry_Grouped'].dropna().unique().tolist()
+
+
+industries = get_unique_industries(scores_ranks_df)
+
 # 加载预训练的BERT模型和Tokenizer
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=10)
-
-# 将行业标签定义为列表（从数据集的 Industry (Grouped) 字段中提取的行业列表）
-industries = ['Household Products', 'Electronics', 'Telecommunications', 'Food', 'Apparel', 'Automotive', 'Healthcare',
-              'Financials', 'Energy', 'Technology']
+model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=len(industries))
 
 
 def classify_product(product_name):
@@ -31,9 +37,9 @@ def map_product_to_industry(product_name):
     """
     从产品-行业映射表中查找产品对应的行业。
     """
-    match = product_industry_df[product_industry_df['product'].str.contains(product_name, case=False, na=False)]
+    match = product_industry_df[product_industry_df['Product Name'].str.contains(product_name, case=False, na=False)]
     if not match.empty:
-        return match['industry'].values[0]
+        return match['Industry'].values[0]
     return None
 
 
