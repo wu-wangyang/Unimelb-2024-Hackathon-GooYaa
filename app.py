@@ -16,8 +16,8 @@ def home():
 
 @app.route('/recommend', methods=['POST'])
 def recommend():
-    # 从请求中获取用户输入的行业
-    user_input = request.json.get('industry', '')
+    # 从请求中获取用户输入的产品名称
+    user_input = request.json.get('input', '')
 
     # 调用推荐函数，获取推荐结果
     recommendations = recommend_companies(user_input, scores_ranks_df)
