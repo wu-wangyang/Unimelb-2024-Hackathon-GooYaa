@@ -7,22 +7,24 @@ document.addEventListener("DOMContentLoaded", function () {
     function validateInput() {
         const query = userInput.value.trim(); // Get the user input
 
-        // Check if input is less than 2 characters
-        if (query.length == 0) {
-            resultContainer.innerHTML = `<span class="red-text">Please enter a product.</span>`;
+        // Check if input is empty or consists only of spaces
+        if (query.length === 0) {
+            resultContainer.innerHTML = `<span style="color: red;">Input cannot be empty</span>`;
+            return false;
         }
-        if (query.length < 2) {
-            resultContainer.innerHTML = `<span style="color: red;">Input must be at least 3 characters long.</span>`;
+        
+        // Check if input contains only letters
+        const onlyLetters = /^[a-zA-Z]+$/.test(query);
+        if (!onlyLetters) {
+            resultContainer.innerHTML = `<span style="color: red;">Input must contain only letters (no numbers or special characters).</span>`;
             return false;
         }
 
-        // Check if input contains at least one letter and one number
-        const hasLetter = /[a-zA-Z]/.test(query);
-        ;
-
-        
-        
-        
+        // Check if input is less than 2 characters
+        if (query.length <= 2) {
+            resultContainer.innerHTML = `<span style="color: red;">Input must be at least 3 characters long.</span>`;
+            return false;
+        }
 
         // If input passes validation
         if (query) {
