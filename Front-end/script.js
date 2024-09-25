@@ -3,46 +3,49 @@ document.addEventListener("DOMContentLoaded", function () {
     const sendButton = document.getElementById("send-button");
     const resultContainer = document.querySelector(".result-container h2");
 
-    // Function to validate and simulate a search
-    function validateInput() {
-        const query = userInput.value.trim(); // Get the user input
+    async function validateAndSearch(event) {
+        event.preventDefault(); // Prevent form submission if using a form
 
-        // Check if input is empty or consists only of spaces
-        if (query.length === 0) {
+        const query = userInput.value.trim();
+
+        if (!query) {
             resultContainer.innerHTML = `<span style="color: red;">Input cannot be empty</span>`;
-            return false;
-        }
-        
-        // Check if input contains only letters
-        const onlyLetters = /^[a-zA-Z]+$/.test(query);
-        if (!onlyLetters) {
-            resultContainer.innerHTML = `<span style="color: red;">Input must contain only letters (no numbers or special characters).</span>`;
-            return false;
+            return;
         }
 
-        // Check if input is less than 2 characters
-        if (query.length <= 2) {
-            resultContainer.innerHTML = `<span style="color: red;">Input must be at least 3 characters long.</span>`;
-            return false;
-        }
+        try {
+            const response = await fetch("/recommend", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ input: query })
+            });
 
-        // If input passes validation
-        if (query) {
-        resultContainer.innerHTML = `<span style="color: blue;">Choice for: ${query}</span><br><span style="color: blue;">Top 3 Company</span>`;
-        return true;
+            if (!response.ok) {
+                resultContainer.innerHTML = `<span style="color: red;">Error: ${response.statusText}</span>`;
+                return;
+            }
+
+            const result = await response.json();
+            if (result.error) {
+                resultContainer.innerHTML = `<span style="color: red;">Error: ${result.error}</span>`;
+            } else {
+                resultContainer.innerHTML = `<span style="color: blue;">Top 5 Recommended Companies for ${query}:</span><br>`;
+                result.forEach(company => {
+                    resultContainer.innerHTML += `<p><strong>${company['Company Name']}</strong> - Score: ${company['Total Score \n(out of 100)']} (Rank: ${company['Total Rank']})</p>`;
+                });
+            }
+        } catch (error) {
+            resultContainer.innerHTML = `<span style="color: red;">Error: ${error.message}</span>`;
         }
-        
     }
 
-    // Event listener for the search button
-    sendButton.addEventListener("click", function () {
-        validateInput();
-    });
-
-    // Optionally, allow pressing 'Enter' to trigger the search
+    // Add event listeners
+    sendButton.addEventListener("click", validateAndSearch);
     userInput.addEventListener("keyup", function (event) {
         if (event.key === "Enter") {
-            validateInput();
+            validateAndSearch(event);
         }
     });
 });

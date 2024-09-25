@@ -2,10 +2,12 @@ import pandas as pd
 from transformers import BertTokenizer, BertForSequenceClassification
 import torch
 
-from app import scores_ranks_df
+# from app import scores_ranks_df
+data_path = './data/Nature_2022-2024_PublicDataset_20240718_v4.xlsx'
+scores_ranks_df = pd.read_excel(data_path, sheet_name='Scores and ranks')
 
 # Load the product-industry mapping table
-product_industry_df = pd.read_csv('./data/product_industry.csv')
+product_industry_df = pd.read_csv('./data/dataset.csv')
 
 
 # Extract the unique list of industries from the company score dataset
