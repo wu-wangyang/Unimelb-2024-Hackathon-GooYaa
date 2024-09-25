@@ -4,7 +4,7 @@ from recommender import recommend_companies
 
 app = Flask(__name__)
 
-# 读取企业数据
+# Load the company data
 data_path = './data/Nature_2022-2024_PublicDataset_20240718_v4.xlsx'
 scores_ranks_df = pd.read_excel(data_path, sheet_name='Scores and ranks')
 
@@ -16,13 +16,13 @@ def home():
 
 @app.route('/recommend', methods=['POST'])
 def recommend():
-    # 从请求中获取用户输入的产品名称
+    # Get the product name input from the user's request
     user_input = request.json.get('input', '')
 
-    # 调用推荐函数，获取推荐结果
+    # Get the product name input from the user's request
     recommendations = recommend_companies(user_input, scores_ranks_df)
 
-    # 返回JSON格式的推荐结果
+    # Return the recommendation results in JSON format
     return jsonify(recommendations)
 
 
