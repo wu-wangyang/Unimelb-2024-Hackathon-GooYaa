@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import pandas as pd
 from recommender import recommend_companies
 
@@ -11,20 +11,24 @@ scores_ranks_df = pd.read_excel(data_path, sheet_name='Scores and ranks')
 
 @app.route('/')
 def home():
-    return "Welcome to the Product Recommendation API!"
+    return render_template('index.html')
 
 
 @app.route('/recommend', methods=['POST'])
 def recommend():
     # Get the product name input from the user's request
-    user_input = request.json.get('input', '')
+    user_input = request.json.get('input', '').strip()
 
-    # Get the product name input from the user's request
-    recommendations = recommend_companies(user_input, scores_ranks_df)
+    if not user_input:
+        return jsonify({"error": "Product name cannot be empty"}), 400
 
-    # Return the recommendation results in JSON format
-    return jsonify(recommendations)
-
+    try:
+        # Get the recommendations from the recommender function
+        recommendations = recommend_companies(user_input, scores_ranks_df)
+        return jsonify(recommendations)
+    except Exception as e:
+        # Return a proper error message if something goes wrong
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
