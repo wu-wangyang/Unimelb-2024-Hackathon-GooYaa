@@ -1,26 +1,75 @@
-def recommend_companies(industry, df, top_n=5):
+import pandas as pd
+from transformers import BertTokenizer, BertForSequenceClassification
+import torch
+
+from app import scores_ranks_df
+
+# Load the product-industry mapping table
+product_industry_df = pd.read_csv('./data/product_industry.csv')
+
+
+# Extract the unique list of industries from the company score dataset
+def get_unique_industries(df):
+    return df['Industry_Grouped'].dropna().unique().tolist()
+
+
+industries = get_unique_industries(scores_ranks_df)
+
+# Load the pre-trained BERT model and tokenizer
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+model = BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=len(industries))
+
+
+def classify_product(product_name):
     """
-    根据行业名称推荐评分最高的公司。
+    Classify the product using the BERT model to predict its associated industry.
+    """
+    inputs = tokenizer(product_name, return_tensors="pt", padding="max_length", truncation=True)
+    outputs = model(**inputs)
+    logits = outputs.logits
+    predicted_class = torch.argmax(logits, dim=1).item()
+
+    # Return the predicted industry name
+    return industries[predicted_class]
+
+
+def map_product_to_industry(product_name):
+    """
+    Find the industry corresponding to the product from the product-industry mapping table.
+    """
+    match = product_industry_df[product_industry_df['Product Name'].str.contains(product_name, case=False, na=False)]
+    if not match.empty:
+        return match['Industry'].values[0]
+    return None
+
+
+def recommend_companies(user_input, df, top_n=5):
+    """
+    Recommend companies based on the product name provided by the user.
 
     Args:
-    industry (str): 用户输入的行业名称
-    df (DataFrame): 含有企业评分和排名的数据表
-    top_n (int): 推荐的公司数量，默认是5
+    user_input (str): The product name provided by the user
+    df (DataFrame): The dataset containing company scores and rankings
+    top_n (int): The number of companies to recommend, default is 5
 
     Returns:
-    list: 推荐的公司列表
+    list: A list of recommended companies
     """
-    # 根据行业筛选出相关的公司
-    filtered_df = df[df['Industry_Disaggregated'].str.contains(industry, case=False, na=False)]
+    # First try to find the corresponding industry from the mapping table
+    industry = map_product_to_industry(user_input)
 
-    # 如果没有找到匹配的行业，返回空列表
+    # If the industry is not found in the mapping table, classify it using BERT
+    if industry is None:
+        industry = classify_product(user_input)
+
+    # Filter the companies based on the identified industry and recommend them
+    filtered_df = df[df['Industry_Grouped'].str.contains(industry, case=False, na=False)]
+
     if filtered_df.empty:
-        return {"message": "No companies found for the specified industry."}
+        return {"message": f"No companies found for the industry: {industry}."}
 
-    # 按照总分降序排序，并获取前N个公司
+    # Sort by total score and return the top N companies
     top_companies = filtered_df.nlargest(top_n, 'Total Score \n(out of 100)')
-
-    # 构建推荐结果
     recommendations = top_companies[['Company Name', 'Total Score \n(out of 100)', 'Total Rank']].to_dict(
         orient='records')
 
