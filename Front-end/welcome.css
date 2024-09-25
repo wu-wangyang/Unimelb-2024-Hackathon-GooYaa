@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap'); /* Custom Google Font */
+
+/* Style for the body */
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: linear-gradient(135deg, #ff7e5f, #feb47b, #86a8e7, #91eae4);
+    background-size: 400% 400%;
+    animation: gradientAnimation 10s ease infinite;
+}
+
+@keyframes gradientAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Fancy welcome text */
+h1 {
+    font-family: 'Pacifico', cursive;  /* Fancy custom font */
+    font-size: 48px;
+    background: linear-gradient(to right, #ff7e5f, #feb47b, #86a8e7, #91eae4);
+    -webkit-background-clip: text;
+    color: transparent;
+    text-align: center;
+    text-shadow: 2px 4px 6px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+    margin: 0;
+    padding: 20px;
+    transform: scale(1);
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Scale on hover for a subtle animation */
+h1:hover {
+    transform: scale(1.1); /* Text grows slightly on hover */
+}
+
+/* Container styling */
+.welcome-container {
+    text-align: center;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
